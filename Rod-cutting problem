@@ -1,0 +1,172 @@
+#Pesudocode from cormen et al
+
+def cut_rod(p,n):
+    """
+    A recursive top-down solution to the rod cutting problem as described in Cormen et. al. (pp 363) This calculates the maximum revenue that could be earned by cutting up a rod of length n.
+    Parameters
+    ----------
+    p
+    	list of floats, the prices of rods of different lengths. p[i] gives the dollars of revenue the company earns selling a rod of length i+1.
+    n
+    	int, length of the rod
+    Returns
+    -------
+    q
+    	float, the optimal revenue
+    """
+    # YOUR CODE HERE
+    if n == 0:
+        return 0
+    q = float('-inf')
+    for i in range(n):
+        q = max(q, p[i] + cut_rod(p, n-i-1))
+    return q
+
+
+
+
+
+def extended_bottom_up_cut_rod(p,n):
+    """
+    Implements a bottom-up dynamic programming approach to the rod cutting problem.
+    Here, "extended" means the function is geared in a way amenable to reconstructing
+    an optimal solution, on top of the returned optimal value. See Cormen et al.,
+    p. 269 for the implementation details.
+    Parameters
+    ----------
+    p
+    	list of floats, the prices of rods of different lengths. p[i] gives the dollars
+    of revenue the company earns selling a rod of length i+1.
+    n
+    	int, length of the rod
+    Returns
+    -------
+    r
+    	list of floats, the maximum revenues. r[i] gives the maximum revenue for a rod of length i. As such:
+        * r[0] = 0
+        * len(r) = n + 1
+    s
+    	list of ints, the optimal sizes of the first piece to cut off. Also make sure that:
+        * s[0] = 0
+        * len(s) = n + 1
+    """
+    # YOUR CODE HERE
+    r = [0] * (n+1)
+    s = [0] * (n+1)
+    for j in range(1, n+1):
+        q = float('-inf')
+        for i in range(j):
+            if q < (p[i] + r[j - i - 1]):
+                    q = p[i] + r[j - i - 1]
+                    s[j] = i + 1
+        r[j] = q
+    return r, s
+    
+
+def print_cut_rod_solution(p,n):
+    """
+    Gives a solution to the rod cutting problem of size n. 
+    Parameters
+    ----------
+    p
+    	list of floats, the prices of rods of different lengths. p[i] gives the revenue (in USD, for example) the company earns selling a rod of length i+1.
+    n
+    	int, length of the rod
+    Returns
+    -------
+    sol
+    	a list of ints, indicating how to cut the rod. Cutting the rod with the lengths given in sol gives the optimal revenue.
+    """
+    # YOUR CODE HERE
+    sol = []
+    (r, s) = extended_bottom_up_cut_rod(p,n)
+    while n > 0:
+        sol.append(s[n])
+        n = n - s[n]
+   
+    return sol 
+
+
+
+
+## your code here
+## your code here
+import time
+import matplotlib.pyplot as plt
+import seaborn as sns
+#initialize arrays to store times
+cut_rod_time = []
+#intializing rod lengths
+n = 20
+#values for the x axis
+lengths = list(range(1, n + 1))
+#set the number of tests and generate price list
+tests = 10
+P = generate_price_list(20)
+
+#iterate over all the possible lengths
+for length in range(1, n + 1):
+    #set initial values at 0
+    current_cutrod_time = 0
+    #running multiple tests
+    for j in range(tests):
+        #Recursive approach
+        t1 = time.time()
+        cut_rod(P, length)
+        t2 = time.time()
+        time_taken = t2 - t1
+        current_cutrod_time += time_taken
+    #append the average value from the tests
+    cut_rod_time.append(current_cutrod_time/tests)
+    
+ax = sns.lineplot(lengths, cut_rod_time, label = "recursive", color = "red")
+plt.xlabel('Length')
+plt.ylabel('Time')
+plt.show()
+#    plt.plot(lengths, cut_rod_time, color = 'red',label = 'recursive approach', linewidth = 1.0)
+#    plt.plot(lengths, extended_cut_rod_time, color = 'blue',label = 'Bottom up', linewidth = 1.0)
+#    plt.xlabel('$Lengths$', fontsize=10)
+#    plt.ylabel('Time', fontsize=10)
+#    plt.legend()
+
+
+
+## your code here
+import time
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+cut_rod_time = []
+extended_cut_rod_time = []
+
+n = 20
+
+lengths = list(range(1, n + 1))
+
+tests = 50
+P = generate_price_list(20)
+
+for length in range(1,n + 1):
+    current_cutrod_time = 0
+    current_extendedcutrod_time = 0
+    for j in range(tests):
+        # Recursive approach.
+        t1 = time.time()
+        cut_rod(P, length)
+        t2 = time.time()
+        timetaken = t2 - t1
+        current_cutrod_time += timetaken
+        # Bottom up approach.
+        t3 = time.time()
+        extended_bottom_up_cut_rod(P, length)
+        t4 = time.time()
+        timetaken = t4 - t3
+        current_extendedcutrod_time += timetaken
+    cut_rod_time.append(current_cutrod_time/tests)
+    extended_cut_rod_time.append(current_extendedcutrod_time/tests)
+    
+ax = sns.lineplot(lengths, cut_rod_time, label = "recursive", color='red') 
+ax = sns.lineplot(lengths, extended_cut_rod_time, label = "bottom up", color= 'blue') 
+plt.xlabel('Length')
+plt.ylabel('Time')
+plt.show()
