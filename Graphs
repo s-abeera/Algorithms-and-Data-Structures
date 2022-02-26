@@ -1,0 +1,58 @@
+class Graph:
+    def __init__(self, n):
+        self.adjacency_matrix = [[] for _ in range(n)]
+        
+    def add_directed_edge(self, from_node, to_node):
+        """ 
+        Create a directed edge between the starting node and ending node value
+        Parameters
+        ---------- 
+            from_node: int
+                the starting node of an edge
+            to_node: int
+                the ending node of an edge
+        Returns
+        ----------
+            None
+        """
+#Your code here
+        self.adjacency_matrix[from_node].append(to_node)
+        return None
+
+    def add_undirected_edge(self, node1, node2):
+        """ 
+        Create an undirected edge between the starting node and ending node value
+        Parameters
+        ----------
+            node1: int
+                the first node
+            node2: int
+                the second node 
+        Returns
+        ----------
+            None
+        """
+        #Your code here
+        self.adjacency_matrix[node1].append(node2)
+        self.adjacency_matrix[node2].append(node1)
+
+        return None
+
+cityGraph = Graph(10)
+# adding directed edges (unique direction)
+cityGraph.add_directed_edge(0, 2)
+cityGraph.add_directed_edge(3, 5)
+cityGraph.add_directed_edge(2, 8)
+cityGraph.add_directed_edge(1, 6)
+cityGraph.add_directed_edge(7, 9)
+cityGraph.add_directed_edge(8, 1)
+
+# adding undirected edges (double direction)
+cityGraph.add_undirected_edge(1, 2)
+cityGraph.add_undirected_edge(4, 6)
+cityGraph.add_undirected_edge(3, 4)
+cityGraph.add_undirected_edge(1, 9)
+
+
+
+assert (cityGraph.adjacency_matrix == [[2], [6, 2, 9], [8, 1], [5, 4], [6, 3], [], [4], [9], [1], [1]])
