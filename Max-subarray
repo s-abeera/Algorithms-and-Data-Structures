@@ -1,0 +1,47 @@
+#Algortihm based on a pseudocode from Cormen et al. 
+
+def incremental_max_subarray(x, mx):
+    """ 
+    Inputs:
+    - x: a NON-EMPTY list of numbers (e.g., the array B in the first two questions above). 
+        * If x has 1 element: returns the value of the element regardless of the value of mx
+    - mx: the maximum subarray of x excluding its last element (i.e., compute the 
+    maximum subarray of the input array x considering only its first len(x) - 1 elements)
+    
+    Output: The maximum subarray of the array x.
+    """
+    # your code here
+    if len(x) == 1:
+        return x[0]
+    else:
+        current_value = x[-1]
+        maxsum = current_value 
+        pos = 0
+        for i in reversed(range(len(x)-1)):
+            current_value = current_value + x[i]
+            if current_value > maxsum:
+                maxsum = current_value
+        return max(mx, maxsum)
+x = [-2, -3, 4, -1, -2, 1, 8]
+incremental_max_subarray(x, 4)
+
+
+def max_subarray(A):
+    """
+    Using `incremental_max_subarray` iteratively on A to produce the value of the maximum
+    subarray of A.
+    
+    Inputs:
+    - A: a NON-EMPTY list of floats
+    
+    Outputs: flaot, the sum of the maximum subarray of A
+    """
+    # your code here
+    mx = A[0]
+    for i in range(1,len(A)+1):
+        x = A[0:i]
+        mx = incremental_max_subarray(x, mx)
+    return mx
+
+A = [-2, -3, 4, -1, -2, 1, 8]
+max_subarray(A)
