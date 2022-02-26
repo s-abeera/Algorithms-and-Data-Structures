@@ -1,0 +1,59 @@
+import time
+import numpy as np
+import random
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set_style("darkgrid")
+%matplotlib inline
+
+def qsort(lst, pivot_relative_location):
+    """
+    Implements iterative version of quicksort
+
+    Parameters
+    ----------
+    lst : Python list or numpy array
+    locations : int
+        relative location of the pivot with respect to the input list
+        should vary between 0 and 0.5
+
+    Returns
+    -------
+    array: a sorted Python list
+
+    """
+    # initialising the indices list
+    indices = [(0, len(lst))]
+    while indices:
+        (frm, to) = indices.pop()
+        if frm == to:
+            continue
+        N = to - frm
+        # choose the pivot from pivot_relative_location
+        pivot = lst[frm + int(N * pivot_relative_location)]
+        # split into 3 partitions
+        lower = [a for a in lst[frm:to] if a < pivot]
+        upper = [a for a in lst[frm:to] if a > pivot]
+        counts = sum([1 for a in lst[frm:to] if a == pivot])
+        # record the indices that signal the end/start of the partitions
+        ind1 = frm + len(lower)
+        ind2 = ind1 + counts
+        # push back into the correct place
+        lst[frm:ind1] = lower
+        lst[ind1:ind2] = [pivot] * counts
+        lst[ind2:to] = upper
+        # enqueue other locations to keep sorting the remaining array
+        indices.append((frm, ind1))
+        indices.append((ind2, to))
+    return lst
+
+def randomized_quicksort(N, pivot_location):
+    lst = [i for i in range(N)]
+    random.shuffle(lst)
+    return qsort(lst, pivot_location)
+
+
+def test_quicksort(N, pivot_location):
+    lst = randomized_quicksort(N, pivot_location)
+    assert (lst == [i for i in range(N)])
