@@ -1,0 +1,34 @@
+def dijkstra(G, s):
+    """
+    Apply the Dijkstra Algorithm to find the shortest path of a graph.  
+    Parameters
+    ----------
+    G: 
+        A graph
+    s:
+        A source node 
+    Returns
+    -------
+    None 
+    """
+    visited = set()
+    s.color = Node.GRAY
+    s.dist = 0 
+    unvisited_queue = [G.nodes[v] for v in G.nodes.keys()]
+    while unvisited_queue:
+        # your block of code here: make sure to update the visited and unvisited queue objects
+        u = extract_min(unvisited_queue)
+        for vname, weight in u.weighted_adj_list.items(): 
+        # your block of code here: make sure to use the relax function, where appropriate
+            relax(u, G.nodes[vname])
+    return None
+   
+
+# Test your code on the graph above with the source node 1:
+s = g.nodes["1"]
+dijkstra(g, s)
+shortest_path = []
+for v in g.nodes.keys():
+    shortest_path.append((g.nodes[v].name,g.nodes[v].dist))
+
+assert shortest_path == [('0', 5), ('1', 0), ('2', 8), ('3', 2)]
