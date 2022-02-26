@@ -1,0 +1,120 @@
+def lcs_tables(x, y):
+    """
+    This is equivalent to LCS-LENGTH from Cormen et al 
+    (we have just changed the name so that the purpose of the function is clearer).
+    It computes the b and c tables required to read-off an LCS of strings x and y.
+    
+    Inputs:
+    - x, y: strings
+    
+    Outputs:
+    - c: a list of lists of ints OR a numpy array. c[i,j] contains the 
+    length of a LCS of x[:i] and y[:j]
+    - b: a list of lists of strings OR a numpy array, containing the information
+    used for LCS reconstruction (See Cormen et al.) Use "N" (North), "NW" 
+    (North West), and "W" (West) that correspond to the directions of the arrows 
+    used in Cormen et al.
+    """
+    # Calculate the length of the string
+    m = len(x)
+    n = len(y)
+    
+    # Create table
+    b = []
+    c = []
+    
+    for i in range (m + 1):
+        b.append([0] * (n + 1))
+        c.append([0] * (n + 1))
+    
+    # your code here
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if x[i - 1] == y[j - 1]:
+                c[i][j] = c[i - 1][j - 1] + 1
+                b[i][j] = 'NW'
+            elif c[i - 1][j] >= c[i][j - 1]:
+                c[i][j] = c[i - 1][j]
+                b[i][j] = 'N'
+            else:
+                c[i][j] = c[i][j - 1]
+                b[i][j] = 'W'
+    return c, b
+    return c, b
+
+def reconstruct_lcs(b, x, i, j):
+    """
+    This is equivalent to PRINT-LCS from Cormen et al 
+    (we have just changed the name so that the purpose of the function is clearer).
+    Reconstructs the elements of the LCS given the b table computed via lcs_tables.
+    
+    Inputs:
+    - b: a list of lists of strings OR a numpy array, returned by lcs_length
+    - x: string, an input to lcs_length
+    - i, j: ints. print_lcs(b,x,i,j) returns a lcs of x[:i] and y[:j], where y
+    is an input to lcs_length.
+    
+    Outputs:
+    - tuple of:
+        - lcs: list of strings, representing a LCS of x and y
+        - length: int, the length of the LCS    
+    """    
+    # your code here
+    if i == -1 or j == -1:
+        return []
+    if b[i][j] == 'NW':
+        array = reconstruct_lcs(b, x, i - 1, j - 1)
+        array.append(x[i - 1])
+        return array
+    elif b[i][j] == 'N':
+        return reconstruct_lcs(b, x, i - 1, j)
+    else:
+        return reconstruct_lcs(b, x, i, j - 1)
+
+
+def find_lcs(x, y):
+    '''
+    Calls lcs_tables and reconstruct_lcs to return a tuple of the LCS of x and y.
+    If either x or y are empty, it should return (None, 0)
+    Inputs:
+    - x, y: strings
+    
+    Output:
+    - tuple of:
+        - lcs: list of strings, representing a LCS of x and y
+        - length: int, the length of the LCS    
+    '''
+    # your code here
+    a, b = lcs_tables(x, y)
+    LCS = reconstruct_lcs(b, x, len(x), len(y))
+    return (LCS, len(LCS))
+    
+#### testing your code
+x1, y1 = 'ambgdec', 'aubyci'
+assert(find_lcs(x1, y1) == (['a', 'b', 'c'], 3))
+
+x2, y2 = 'xyqwsssazdesaqqf', 'xoppoypllzookjdef'
+assert(find_lcs(x2, y2) == (['x', 'y', 'z', 'd', 'e', 'f'], 6))
+
+
+
+
+
+def lmis(lst):
+    """
+    Finds the Longest Monotonically Increasing Subsequence (LMIS) of a list 
+ 
+    Inputs:
+    - lst: a list of ints
+    
+    Outputs:
+    - out_lst: a list of ints, a longest monotonically increasing subsequence
+    of lst
+    """
+    # your code here
+    sorted_lst = sorted(lst)
+    return find_lcs(lst, sorted_lst)[0]
+    
+    
+assert(lmis([5, 1, 0, 4, 2, 6, 7, 9]) == [1, 4, 6, 7, 9])
+assert(lmis([6, -1, 4, 5, 5, 7, -6, 2]) == [-1, 4, 5, 5, 7])
