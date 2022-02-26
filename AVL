@@ -1,0 +1,335 @@
+class AVLNode(Node):
+    def __init__(self, val):
+        self.l_child = None
+        self.r_child = None
+        self.parent = None
+        self.data = val
+        self.lr_balance = 0
+        self.height = 0
+
+class AVLTree:
+    def __init__(self):
+        self.root = None
+    
+    def get_violating_node(self, node):
+        if not self.root or node == self.root:
+            return None
+        if node == node.parent.r_child:
+            if not node.parent.l_child:
+                node.parent.height = max(-1, node.height) + 1
+                node.parent.lr_balance = -1-node.height
+            else:
+                node.parent.height = max(node.parent.l_child.height, node.height) + 1
+                node.parent.lr_balance = node.parent.l_child.height-node.height
+        else:
+            if not node.parent.r_child:
+                node.parent.height = max(-1, node.height) + 1
+                node.parent.lr_balance = node.height + 1
+            else:
+                node.parent.height = max(node.parent.r_child.height, node.height) + 1
+                node.parent.lr_balance = node.height-node.parent.r_child.height
+        if abs(node.parent.lr_balance) > 1:
+            return node.parent
+        else:
+            return self.get_violating_node(node.parent)
+                
+
+    def insert(self, node):
+        """inserts a node into a AVL Tree"""
+        if not self.root:
+            self.root = node
+            return
+
+        violating_node = None
+        curr_node = self.root
+        root = self.root
+        while curr_node:
+            if curr_node.data > node.data:
+                if curr_node.l_child is None:
+                    curr_node.l_child = node
+                    node.parent = curr_node
+                    break
+                else:
+                    curr_node = curr_node.l_child 
+            else:   
+                if curr_node.r_child is None:
+                    curr_node.r_child = node
+                    node.parent = curr_node
+                    break
+                else:
+                    curr_node = curr_node.r_child
+        # fix up the tree
+        violating_node = self.get_violating_node(node)
+        
+        while violating_node:
+            x = violating_node
+            if x.lr_balance < 0: # right heavy
+                y = x.r_child
+                if y.lr_balance < 0:
+                    root = left_rotate(x, root)
+                    x.lr_balance = 0
+                    x.height -= 2
+                    y.lr_balance = 0
+                elif y.lr_balance == 0:
+                    root = left_rotate(x, root)
+                    x.lr_balance = -1
+                    x.height -= 1
+                    y.lr_balance = 1
+                    y.height += 1 
+                else:
+                    z = x.r_child
+                    y = z.l_child
+                    root = right_rotate(z, root)
+                    root = left_rotate(x, root)
+                    x.height -= 2
+                    y.lr_balance = 0
+                    y.height += 1
+                    z.height -= 1 
+                    if y.lr_balance == -1: 
+                        x.lr_balance = 1
+                        z.lr_balance = 0
+                    elif y.lr_balance == 0: 
+                        x.lr_balance = 0
+                        z.lr_balance = 0
+                    else: 
+                        x.lr_balance = 0
+                        z.lr_balance = -1 
+       
+            else:
+                y = x.l_child
+                if y.lr_balance > 0:
+                    root = right_rotate(x, root)
+                    x.lr_balance = 0
+                    x.height -= 2
+                    y.lr_balance = 0
+                elif y.lr_balance == 0:
+                    root = right_rotate(x, root)
+                    x.lr_balance = 1
+                    x.height -= 1
+                    y.lr_balance = -1
+                    y.height += 1
+                else:
+                    z = x.l_child 
+                    y = z.r_child
+                    root = left_rotate(z, root)
+                    root = right_rotate(x, root)
+                    x.height -= 2
+                    y.lr_balance = 0
+                    y.height += 1
+                    z.height -= 1
+                    if y.lr_balance == -1: # B: k-2, C: k-1
+                        x.lr_balance = 0
+                        z.lr_balance = 1
+                    elif y.lr_balance == 0: # B=C=k-1
+                        x.lr_balance = 0
+                        z.lr_balance = 0
+                    else: # B: k-1, C: k-2
+                        x.lr_balance = -1
+                        z.lr_balance = 0
+            if root == y: 
+                violating_node = None
+                continue
+            elif y == y.parent.l_child:
+                y.parent.lr_balance = y.height - y.parent.r_child.height
+                y.parent.height = max(y.height, y.parent.r_child.height) + 1
+            elif y == y.parent.r_child:
+                y.parent.lr_balance = y.parent.l_child.height - y.height
+                y.parent.height = max(y.parent.l_child.height, y.height) + 1
+            if abs(y.parent.lr_balance) > 1:
+                violating_node = y.parent
+            else: violating_node = None 
+
+        self.root = root
+        return root
+    
+def left_rotate(x, root):
+    """Performs left-rotation on x, returns the root.
+    This procedure does NOT update any augmented data (if any)
+    of the nodes (e.g., height, left-right balance, etc.), simply
+    changing the pointers and the parent-child relationship,
+    and setting the new root (if any). The updating task belongs to 
+    the procedure that calls this function.
+    
+    Input:
+    - x: a node, to be performed the rotation on
+    - root: the root node of the tree.
+    
+    Output:
+    - root: the (new) root of the tree
+    """
+    y = x.r_child
+    x.r_child = y.l_child
+    if not y.l_child is None:
+        y.l_child.parent = x
+    y.parent = x.parent
+    if not x.parent:
+        root = y
+    elif x == x.parent.l_child:
+        x.parent.l_child = y
+    else:
+        x.parent.r_child = y
+    y.l_child = x
+    x.parent = y
+    return root
+
+def right_rotate(y, root):
+    """Performs right-rotation on x, returns the root.
+    This procedure does NOT update any augmented data (if any)
+    of the nodes (e.g., height, left-right balance, etc.), simply
+    changing the pointers and the parent-child relationship,
+    and setting the new root (if any). The updating task belongs to 
+    the procedure that calls this function.
+    
+    Input:
+    - x: a node, to be performed the rotation on
+    - root: the root node of the tree.
+    
+    Output:
+    - root: the (new) root of the tree
+    """
+    # your code here
+    x = y.l_child
+    y.l_child = x.r_child
+    if not x.r_child is None:
+        x.r_child.parent = y
+    x.parent = y.parent
+    if not y.parent:
+        root = x
+    elif y == y.parent.r_child:
+        y.parent.r_child = x
+    else:
+        y.parent.l_child = x
+    x.r_child = y
+    y.parent = x
+    return root
+    
+    
+    
+    
+    
+import random
+import numpy as np
+import matplotlib.pyplot as plt
+def height(node):
+    """Finds the height of a BST rooted at a node.
+    
+    Input:
+    - node: a node, the root of the BST
+    
+    Output:
+    - h: int, the height of the BST"""
+    # your code here
+    
+    if not node:
+        return 0
+    #else keep looking for the deepest leaf
+    else:
+        #recursive calls to go deeper and search for the depth
+        leftchild = height(node.l_child)
+        rightchild = height(node.r_child)
+        return 1 + max(leftchild, rightchild)
+    
+
+
+import random 
+
+class Node:
+    def __init__(self, val):
+        self.l_child = None
+        self.r_child = None
+        self.parent = None
+        self.data = val
+
+    def insert(self, node):
+        """inserts a node into a *non-empty* tree rooted at the node, returns the root"""
+        if self.data > node.data:
+            if self.l_child is None:
+                self.l_child = node
+                node.parent = self
+            else:
+                self.l_child.insert(node)
+        else:
+            if self.r_child is None:
+                self.r_child = node
+                node.parent = self
+            else:
+                self.r_child.insert(node)
+        return self
+
+
+def get_expected_height_stats(iterations):
+    """Generate the data for plotting the expected heights of BST and AVL.
+    
+    Input:
+    - iterations: int, the number of times to insert into the tree for each 
+    value of the number of nodes to insert. For each iteration, a height is 
+    computed. After all the iterations, all the computed heights are averaged
+    to get an estimate of the expected height. 
+    
+    Output:
+    - bst_expected_heights, avl_expected_heights: list of float, containing
+    the expected heights for the two types of trees. Each element in each list
+    corresponds to one value of n, the number of nodes in the tree. The values 
+    of n are taken from range(1,500,10) (1, 11, 21, 31, etc.)"""
+    bst_expected_heights = []
+    avl_expected_heights = []
+    
+    for n in range(1,500,10):
+        # your code here
+        #creating temporary lists to store the final values
+        temp_list1=[]
+        templist_2=[]
+        
+        #using code provided in pseudocode
+        for i in range(iterations):
+            vals = list(range(n))
+            random.seed(i)
+            random.shuffle(vals)
+            BSTnodes = [Node(val) for val in vals]
+            AVLnodes = [AVLNode(val) for val in vals]
+            
+            #code for creating the bst
+            bst = None
+            #using insert function we defined before
+            for k in BSTnodes:
+                if not bst:
+                    bst = k
+                else:
+                    bst = bst.insert(k)
+                    
+             #avl creation, similar to bst        
+            avl = None
+            for s in AVLnodes:
+                if not avl:
+                    avl = s
+                else:
+                    avl = avl.insert(s)
+                    
+            #using height function to append absolute heights
+            temp_list1.append(height(bst) - 1) #to account for the root when counting the height 
+            templist_2.append(height(avl) - 1)
+        
+        #print(temp_list1)
+        #average or expected heights
+        bst_expected_heights.append(sum(temp_list1)/len(temp_list1))
+        avl_expected_heights.append(sum(templist_2)/len(templist_2))
+    
+    print(bst_expected_heights)
+    print(avl_expected_heights)
+    
+    return bst_expected_heights, avl_expected_heights
+
+
+bst_expected_heights, avl_expected_heights = get_expected_height_stats(10)
+
+assert(bst_expected_heights == [0.0, 5.3, 6.8, 7.8, 9.9, 10.2, 9.9, 11.2, 12.0, 12.2, 12.3, 
+                                12.2, 12.1, 13.4, 13.2, 13.0, 14.3, 14.7, 13.8, 14.1, 14.5, 
+                                15.5, 14.9, 16.0, 16.1, 16.2, 15.4, 17.5, 16.7, 16.1, 16.4, 
+                                17.4, 16.1, 17.3, 16.8, 16.2, 16.7, 17.5, 17.1, 18.4, 17.5, 
+                                17.0, 17.8, 18.4, 18.3, 17.8, 17.7, 17.3, 18.0, 19.5])
+assert(avl_expected_heights == [0.0, 3.0, 4.1, 5.0, 5.4, 6.0, 6.0, 6.1, 6.8, 6.9, 7.0, 7.0, 
+                                7.3, 7.3, 7.5, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.2, 8.2, 8.0, 
+                                8.4, 8.5, 8.7, 8.8, 8.9, 8.8, 8.9, 9.0, 9.0, 9.0, 9.0, 9.0, 
+                                9.0, 9.0, 9.3, 9.1, 9.1, 9.3, 9.3, 9.7, 9.5, 9.6, 9.8, 9.8, 
+                                9.9, 9.8])
+
