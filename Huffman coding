@@ -1,0 +1,133 @@
+import heapq
+class Node(object):
+    """A node in a binary tree that represents a prefix code."""
+    def __init__(self, freq, symb, parent = None, lchild = None, rchild = None):
+        """
+        Parameters:
+        freq
+            float, frequency of the character
+        symb
+            string of the character 
+        parent
+            a node, parent of the current node in the tree
+        lchild, rchild
+            left child node and right child node of the current node in the tree
+        """
+        self.freq = freq
+        self.symb = symb
+        self.parent = parent
+        self.lchild = lchild
+        self.rchild = rchild
+    
+    def __lt__(self, other):
+        """
+        Overloading: nodeA < nodeB returns True if nodeA.freq < nodeB.freq. This enables
+        us to use the module heapq directly on nodes. In other words, with this function,
+        we can now push/insert a node into a heap as well as extract/pop the 
+        minimum node from a heap. We studied the module heapq before. 
+        You can brushup your memory by visiting this link: 
+        https://docs.python.org/3.0/library/heapq.html
+        
+        """
+        return self.freq < other.freq
+        
+        
+        
+        
+def read_encoding(node):
+    """
+    Given a node in the tree, determines the corresponding codeword for character
+    node.symb, using the rule in Cormen et al.: the binary codeword for a character 
+    is the simple path from the root to that character, where 0 means “go to the 
+    left child” and 1 means “go to the right child.
+    Parameter
+    ---------
+    node: a node within a binary tree
+    Returns
+    ---------
+    codeword: the encoded string following the Huffman encoding algorithm.    
+    """
+    codeword = ''
+    while node.parent:
+        if node == node.parent.lchild:
+            codeword += '0'
+            # your code here
+        else:
+            # your code here
+            codeword += '1'
+        node = node.parent
+    return codeword
+
+
+def encode(symb2freq_dict):
+    """
+    Huffman encode the given dict mapping symbols. 
+    This code is inspired in the algorithm implemented by 
+    the function HUFFMAN(C) in section 16.3 of Cormen et al.
+    Parameter
+    ---------
+    symb2freq: a dictionary that maps a symbol/character to
+    the frequency that each occurs. E.g.,
+    {'f1': 1,'f2': 1,'f3': 2} for the first 3 Fibonacci numbers. 
+    Returns
+    ---------
+    encoded_dictionary: a dictionary that maps a symbol/character to 
+    the codeword for that symbol. For the input specified above,
+    {'b': '10', 'a': '11', 'c': '0'}.
+    """
+    n = len(symb2freq_dict)
+    # define an object that will become a priority queue
+    Q = []
+    ### block of code 1 creates the priority queue to hold the symbols and frequencies
+    # your code here
+    for values in list(symb2freq_dict.item()):
+        current_node = Node(values[1], values[0])
+        heapq.heappush(Q, current_node) 
+    
+    ### block of code 2 uses the priority queue to build the binary tree bottom-up
+    # your code here
+    for i in range(n-1):
+        z = Node('z', 0)
+        z.lchild = heapq.heappop(Q)
+        z.lchild = heapq.heappop(Q)
+        z.freq = z.lchild.freq + z.rchild.freq
+        z.lchild.parent = z
+        z.rchild.parent = z
+        heapq.heappush(Q, z)
+        
+    encoded_dictionary = {}
+    ### block of code 3 runs through every node in the tree and stores all the keys from symb2freq and corresponding (encoded) codewords in the encoded_dictionary
+    # your code here
+    for nodes in list(symb2freq_dict.item()):
+        encoded_dictionary = read_encoding(nodes)
+        
+    return encoded_dictionary
+    
+    
+    
+    
+    
+def fib(n):
+    # your code here
+    if n <= 2:
+        return 1
+    value = fib(n-1) + fib(n-2)
+    return value
+
+number_of_fibonacci_numbers = 30
+fibonacci_characters = []
+for i in range(30):
+    fibonacci_characters.append('f'+str(i+1))
+    fibonacci_frequencies = []
+for i in range(30):
+    fibonacci_frequencies.append(fib(i+1))
+fib_dict_freq = dict(zip(fibonacci_characters,fibonacci_frequencies))
+
+# testing your code
+correct_fib_dict_freq = {'f1': 1, 'f2': 1, 'f3': 2, 'f4': 3, 'f5': 5, 
+                         'f6': 8, 'f7': 13, 'f8': 21, 'f9': 34, 'f10': 55, 
+                         'f11': 89, 'f12': 144, 'f13': 233, 'f14': 377, 'f15': 610, 
+                         'f16': 987, 'f17': 1597, 'f18': 2584, 'f19': 4181, 'f20': 6765, 
+                         'f21': 10946, 'f22': 17711, 'f23': 28657, 'f24': 46368, 'f25': 75025, 
+                         'f26': 121393, 'f27': 196418, 'f28': 317811, 'f29': 514229, 'f30': 832040}
+assert(fib_dict_freq==correct_fib_dict_freq)
